@@ -1,0 +1,13 @@
+[package]
+name = "papers_query"
+version = "0.1.0"
+authors = ["stefaniemuroyalei"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+djanco = { git = "https://github.com/PRL-PRG/djanco.git", branch = "main" }
+chrono = "0.4.19"
+clap = "2"
+regex = "1"
