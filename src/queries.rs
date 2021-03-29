@@ -121,7 +121,8 @@ pub fn query6(database: djanco::data::Database, output_file: &str){
         .filter_by(AtLeast(Count(FromEachIf(project::Commits, AtLeast(commit::AuthoredTimestamp, five_years_ago.timestamp()))), 1))
         .filter_by(AtLeast(Count(project::Commits), 1000))
         .filter_by(AtLeast(Count(project::Committers), 20))
-        .sort_by(project::Size) // asume size matters since author seek projects with a large number of java classes
+        .filter_by(AtLeast(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java ))), 500))
+        .sort_by(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java )))) 
         .sample(Random(9, Seed(1)))  
         .map_into(Select!(project::URL, project::Size)) 
         //save output
