@@ -11,3 +11,4 @@ djanco = { git = "https://github.com/PRL-PRG/djanco.git", branch = "main" }
 chrono = "0.4.19"
 clap = "2"
 regex = "1"
+fraction = "0.3.4"

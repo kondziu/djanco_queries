@@ -17,7 +17,9 @@ fn main() {
                 vec![
                     queries::query1, queries::query2, queries::query3,
                     queries::query4, queries::query5, queries::query6,
-                    queries::query7, queries::query8
+                    queries::query7, queries::query8, queries::query9,
+                    queries::query10, queries::query11, queries::query12,
+                    queries::query13, queries::query14, queries::query15
                 ];
 
     // Define command line flags
