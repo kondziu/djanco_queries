@@ -165,7 +165,9 @@ pub fn query9(database: djanco::data::Database, output_file: &str){
     // Characterizing and Identifying Composite Refactorings: Concepts, Heuristics and Patterns
 
     database.projects()
-        .filter_by(Not(project::IsFork))
+        .filter_by(
+            Not(project::IsFork)
+        )
         .filter_by(project::HasIssues) // active issue tracking system
         .filter_by(
             AtLeast(
@@ -178,8 +180,7 @@ pub fn query9(database: djanco::data::Database, output_file: &str){
                 Fraction::new(9,10)
             )
         ) // at least 90% of code written in JAVA
-        //.sample(Distinct(Top(100), project::Stars))
-        //.sample(Distinct(Random(3, Seed(42)), MinRatio(project::Stars, 0.5)))  
+        //.sample(Random(48, Seed(1)))
         //save output
         .into_csv(output_file)
         .expect("Error saving result");
@@ -194,7 +195,7 @@ pub fn query10(database: djanco::data::Database, output_file: &str){
 
     database.projects()
         .filter_by(Not(project::IsFork))
-        .filter_by(MoreThan(project::Size, 0))
+        .filter_by(MoreThan(project::Size, 0)) // non-empty
         .filter_by( 
             Or(
                 AtLeast(project::Stars, 5),
@@ -212,6 +213,8 @@ pub fn query10(database: djanco::data::Database, output_file: &str){
                 1
             )
         )// activity
+        .sample(Random(10000, Seed(1)))
+        .sort_by(project::Stars)
         .into_csv(output_file)
         .expect("Error saving result");
 }
@@ -262,8 +265,8 @@ pub fn query13(database: djanco::data::Database, output_file: &str){
     database.projects()
         .filter_by(Member(project::Language, target_files))
         .filter_by(Not(project::IsFork))
-        .sort_by(project::Stars)
         .filter_by(AtLeast(project::Stars, 100))
+        .sort_by(project::Stars)
         .into_csv(output_file)
         .expect("Error saving result");
     
@@ -282,7 +285,17 @@ pub fn query14(database: djanco::data::Database, output_file: &str){
     let readme_regex = regex!("(readme|README)\\.md");
     database.projects()
         .filter_by(Member(project::Language, target_files))
-        .filter_by(AtLeast(Count(FromEachIf(project::Paths, Matches(path::Location, readme_regex.clone()))), 1)) // has readme
+        .filter_by(
+            AtLeast(
+                Count(
+                    FromEachIf(
+                        project::Paths, 
+                        Matches(path::Location, readme_regex.clone())
+                    )
+                ), 
+                1
+            )
+        ) // has readme
         .sample(Random(5000, Seed(1))) 
         .map_into(
             Select!(
@@ -302,16 +315,24 @@ pub fn query15(database: djanco::data::Database, output_file: &str){
     // A Dataset of Parametric Cryptographic Misuses
 
     database.projects()
-        .filter_by(Equal(project::Language, Language::Java))
-        .filter_by(MoreThan(project::Stars, 100))
+        .filter_by(
+            Equal(project::Language, Language::Java)
+        )
+        .filter_by(
+            MoreThan(project::Stars, 100)
+        )
         .filter_by(
             MoreThan(
                 Count(project::Commits),
                 100
             )
         )
-        .filter_by(AtLeast(project::Created, timestamp!(July 2015)))
-        .filter_by(AtMost(project::Created, timestamp!(August 2018)))
+        .filter_by(
+            AtLeast(project::Created, timestamp!(July 2015))
+        )
+        .filter_by(
+            AtMost(project::Created, timestamp!(August 2018))
+        )
         .into_csv(output_file)
         .expect("Error saving result");
     
