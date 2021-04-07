@@ -1,17 +1,22 @@
-use djanco::csv::*;
 use djanco::*;
+use djanco::csv::*;
+use djanco::log::*;
+use djanco::data::*;
 use djanco::objects::*;
-use chrono::{DateTime, Utc, Duration};
 use djanco::fraction::Fraction;
 
+use djanco_ext::*;
+
+use chrono::{DateTime, Utc, Duration};
 
 // BEGIN MSR20
-pub fn query1 (database: djanco::data::Database, output_file: &str) {
-    // Title: What constitutes Software? An Empirical, Descriptive Study of Artifacts
-
-    //Notes: 
-        // - ABAP language not supported
-        // - ADA language not supported
+#[djanco(April, 2021, subsets(Generic))]
+// What constitutes Software? An Empirical, Descriptive Study of Artifacts
+pub fn query1 (database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
+    /* Notes:
+     * - ABAP language not supported
+     * - ADA language not supported
+     */
         
     let target_files = vec![
         Language::ASM, Language::C, Language::Cobol, Language::Cpp,
@@ -29,31 +34,24 @@ pub fn query1 (database: djanco::data::Database, output_file: &str) {
         .sort_by(project::Stars)
         .sample(Top(1020))
         .map_into(Select!(project::Stars,project::URL, FromEach(project::Paths, path::Location)))
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query1.csv")
 
 }
 
-pub fn query2(database: djanco::data::Database, output_file: &str){
-
-    // A Study of Potential Code Borrowing and License Violations in Java Projects on GitHub
-
+#[djanco(April, 2021, subsets(Generic))]
+// A Study of Potential Code Borrowing and License Violations in Java Projects on GitHub
+pub fn query2(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
         .filter_by(Equal(project::Language, Language::Java))
         .filter_by(Not(project::IsFork))
         .filter_by(AtLeast(project::Stars, 50))
         .map_into(Select!(project::Stars,project::URL, project::License))
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query2.csv")
 }
 
-pub fn query3(database: djanco::data::Database, output_file: &str){
-
-    // An Empirical Study of Method Chaining in Java
-
-
+#[djanco(April, 2021, subsets(Generic))]
+// An Empirical Study of Method Chaining in Java
+pub fn query3(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     // query executed multiple times over a period of time
     database.projects()
         .filter_by(Equal(project::Language, Language::Java))
@@ -62,16 +60,12 @@ pub fn query3(database: djanco::data::Database, output_file: &str){
         .sort_by(project::Stars)
         .sample(Top(1000))
         .map_into(Select!(project::URL,project::Stars))
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
-
+        .into_csv_in_dir(output, "query3.csv")
 }
 
-pub fn query4(database: djanco::data::Database, output_file: &str){
-
-    // Capture the Feature Flag: Detecting Feature Flags in Open-Source
-
+#[djanco(April, 2021, subsets(Generic))]
+// Capture the Feature Flag: Detecting Feature Flags in Open-Source
+pub fn query4(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let flag_regex = regex!("(feature|remove|delete|cleanup).{0,50}(flag|toggle)");
 
     database.projects()
@@ -85,16 +79,12 @@ pub fn query4(database: djanco::data::Database, output_file: &str){
                 FromEachIf(project::Commits, Matches(commit::Message, flag_regex.clone()))
             )
         )
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
-
+        .into_csv_in_dir(output, "query4.csv")
 }
 
-pub fn query5(database: djanco::data::Database, output_file: &str){
-
-    // Detecting and Characterizing Bots that Commit Code
-
+#[djanco(April, 2021, subsets(Generic))]
+// Detecting and Characterizing Bots that Commit Code
+pub fn query5(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let email_regex = regex!(".*(bot).*@.*");
 
     database.projects()
@@ -107,16 +97,13 @@ pub fn query5(database: djanco::data::Database, output_file: &str){
                     Matches(user::Email, email_regex.clone())
                     //)
                 )
-            ))        
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
+            ))
+        .into_csv_in_dir(output, "query5.csv")
 }
 
-pub fn query6(database: djanco::data::Database, output_file: &str){
-
-    // Developer-Driven Code Smell Prioritization
-
+#[djanco(April, 2021, subsets(Generic))]
+// Developer-Driven Code Smell Prioritization
+pub fn query6(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let five_years_ago: DateTime<Utc> = Utc::now() - Duration::weeks(12*4*5);
 
     database.projects()
@@ -127,43 +114,32 @@ pub fn query6(database: djanco::data::Database, output_file: &str){
         .filter_by(AtLeast(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java ))), 500))
         .sample(Random(9, Seed(1))) 
         .sort_by(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java )))) 
-        .map_into(Select!(project::URL, project::Size)) 
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
-
+        .map_into(Select!(project::URL, project::Size))
+        .into_csv_in_dir(output, "query6.csv")
 }
 
-pub fn query7(database: djanco::data::Database, output_file: &str){
-
-    // Did You Remember To Test Your Tokens?
-
+#[djanco(April, 2021, subsets(Generic))]
+// Did You Remember To Test Your Tokens?
+pub fn query7(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
         .filter_by(Equal(project::Language, Language::Java))
         .filter_by(Not(project::IsFork))
         .filter_by(MoreThan(project::Size, 0)) // non-empty project
         .sample(Random(100000, Seed(1)))  
-        .map_into(Select!(project::URL, project::Size)) 
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
-
+        .map_into(Select!(project::URL, project::Size))
+        .into_csv_in_dir(output, "query7.csv")
 }
 
-pub fn query8(database: djanco::data::Database, output_file: &str){
-
-    // Forking Without Clicking: on How to Identify Software Repository Forks
-
+#[djanco(April, 2021, subsets(Generic))]
+// Forking Without Clicking: on How to Identify Software Repository Forks
+pub fn query8(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query8.csv")
 }
 
-pub fn query9(database: djanco::data::Database, output_file: &str){
-
-    // Characterizing and Identifying Composite Refactorings: Concepts, Heuristics and Patterns
-
+#[djanco(April, 2021, subsets(Generic))]
+// Characterizing and Identifying Composite Refactorings: Concepts, Heuristics and Patterns
+pub fn query9(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
         .filter_by(
             Not(project::IsFork)
@@ -181,16 +157,13 @@ pub fn query9(database: djanco::data::Database, output_file: &str){
             )
         ) // at least 90% of code written in JAVA
         //.sample(Random(48, Seed(1)))
-        //save output
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query9.csv")
 }
 
-pub fn query10(database: djanco::data::Database, output_file: &str){
-
-    // The State of the ML-universe: 10 Years of Artificial Intelligence & Machine Learning Software Development on GitHub
-        // Collecting a Comparison Set
-
+#[djanco(April, 2021, subsets(Generic))]
+// The State of the ML-universe: 10 Years of Artificial Intelligence & Machine Learning Software Development on GitHub
+// Collecting a Comparison Set
+pub fn query10(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let one_year_ago: DateTime<Utc> = Utc::now() - Duration::weeks(12*4);
 
     database.projects()
@@ -215,30 +188,24 @@ pub fn query10(database: djanco::data::Database, output_file: &str){
         )// activity
         .sample(Random(10000, Seed(1)))
         .sort_by(project::Stars)
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query10.csv")
 }
 
-pub fn query11(database: djanco::data::Database, output_file: &str){
-
-    // Using Large-Scale Anomaly Detection on Code to Improve Kotlin Compiler
-
-
+#[djanco(April, 2021, subsets(Generic))]
+// Using Large-Scale Anomaly Detection on Code to Improve Kotlin Compiler
+pub fn query11(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
         //.filter_by(Equal(project::Language, Language::Kotlin))
         .filter_by(Not(project::IsFork))
         .filter_by(AtMost(project::Created,timestamp!(March 2018)))
-        .into_csv(output_file)
-        .expect("Error saving result");
+        .into_csv_in_dir(output, "query11.csv")
 }
 
 // END MSR20
 // BEGIN MSR19
-
-pub fn query12(database: djanco::data::Database, output_file: &str){
-
-    // Import2vec Learning Embeddings for Software Libraries
-
+#[djanco(April, 2021, subsets(Generic))]
+// Import2vec Learning Embeddings for Software Libraries
+pub fn query12(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let target_files = vec![
         Language::Java, Language::JavaScript, Language::Python,
         Language::Ruby, Language::PHP, Language::CSharp
@@ -248,15 +215,12 @@ pub fn query12(database: djanco::data::Database, output_file: &str){
         .filter_by(Member(project::Language, target_files))
         .filter_by(AtLeast(project::Stars, 2))
         .filter_by(Not(project::IsFork))
-        .into_csv(output_file)
-        .expect("Error saving result");
-    
+        .into_csv_in_dir(output, "query12.csv")
 }
 
-pub fn query13(database: djanco::data::Database, output_file: &str){
-
-    //Semantic Source Code Models Using Identifier Embeddings
-
+#[djanco(April, 2021, subsets(Generic))]
+//Semantic Source Code Models Using Identifier Embeddings
+pub fn query13(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let target_files = vec![
         Language::Java, Language::Python, Language::PHP, 
         Language::CSharp, Language::C, Language::Cpp
@@ -267,15 +231,12 @@ pub fn query13(database: djanco::data::Database, output_file: &str){
         .filter_by(Not(project::IsFork))
         .filter_by(AtLeast(project::Stars, 100))
         .sort_by(project::Stars)
-        .into_csv(output_file)
-        .expect("Error saving result");
-    
+        .into_csv_in_dir(output, "query13.csv")
 }
 
-pub fn query14(database: djanco::data::Database, output_file: &str){
-
-    //Predicting Good Configurations for GitHub and Stack Overflow Topic Models
-
+#[djanco(April, 2021, subsets(Generic))]
+//Predicting Good Configurations for GitHub and Stack Overflow Topic Models
+pub fn query14(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let target_files = vec![
         Language::Java, Language::Python, Language::HTML, 
         Language::CSS, Language::C, Language::Cpp,
@@ -305,15 +266,12 @@ pub fn query14(database: djanco::data::Database, output_file: &str){
                     Matches(path::Location, readme_regex.clone())
                 )
             ))  
-        .into_csv(output_file)
-        .expect("Error saving result");
-    
+        .into_csv_in_dir(output, "query14.csv")
 }
 
-pub fn query15(database: djanco::data::Database, output_file: &str){
-
-    // A Dataset of Parametric Cryptographic Misuses
-
+#[djanco(April, 2021, subsets(Generic))]
+// A Dataset of Parametric Cryptographic Misuses
+pub fn query15(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
         .filter_by(
             Equal(project::Language, Language::Java)
@@ -333,9 +291,7 @@ pub fn query15(database: djanco::data::Database, output_file: &str){
         .filter_by(
             AtMost(project::Created, timestamp!(August 2018))
         )
-        .into_csv(output_file)
-        .expect("Error saving result");
-    
+        .into_csv_in_dir(output, "query15.csv")
 }
 
 
