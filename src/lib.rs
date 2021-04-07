@@ -33,8 +33,8 @@ pub fn query1 (database: &Database, _log: &Log, output: &std::path::Path) -> Res
         .group_by(project::Language)
         .sort_by(project::Stars)
         .sample(Top(1020))
-        .map_into(Select!(project::Stars,project::URL, FromEach(project::Paths, path::Location)))
-        .into_csv_in_dir(output, "query1.csv")
+        //.map_into(Select!(project::Stars,project::URL, FromEach(project::Paths, path::Location))) // Just project selection
+        .into_csv_in_dir(output, "query_1.csv")
 
 }
 
@@ -45,8 +45,8 @@ pub fn query2(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
         .filter_by(Equal(project::Language, Language::Java))
         .filter_by(Not(project::IsFork))
         .filter_by(AtLeast(project::Stars, 50))
-        .map_into(Select!(project::Stars,project::URL, project::License))
-        .into_csv_in_dir(output, "query2.csv")
+        //.map_into(Select!(project::Stars,project::URL, project::License)) // Just project selection
+        .into_csv_in_dir(output, "query_2.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -59,8 +59,8 @@ pub fn query3(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
         .filter_by(AtLeast(project::Created, timestamp!(January 2011))) // code older than 2010
         .sort_by(project::Stars)
         .sample(Top(1000))
-        .map_into(Select!(project::URL,project::Stars))
-        .into_csv_in_dir(output, "query3.csv")
+        //.map_into(Select!(project::URL,project::Stars)) // Just project selection
+        .into_csv_in_dir(output, "query_3.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -73,32 +73,32 @@ pub fn query4(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
         .filter_by(Not(project::IsFork))
         .filter_by(AtLeast(Count(FromEachIf(project::Commits, Matches(commit::Message, flag_regex.clone()))), 10))
         .sort_by(Count(FromEachIf(project::Commits, Matches(commit::Message, flag_regex.clone()))))
-        .map_into(
-            Select!( 
-                project::URL,
-                FromEachIf(project::Commits, Matches(commit::Message, flag_regex.clone()))
-            )
-        )
-        .into_csv_in_dir(output, "query4.csv")
+        // .map_into(       // Just project selection
+        //     Select!(
+        //         project::URL,
+        //         FromEachIf(project::Commits, Matches(commit::Message, flag_regex.clone()))
+        //     )
+        // )
+        .into_csv_in_dir(output, "query_4.csv")
 }
 
-#[djanco(April, 2021, subsets(Generic))]
+// #[djanco(April, 2021, subsets(Generic))] // Not interesting
 // Detecting and Characterizing Bots that Commit Code
 pub fn query5(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     let email_regex = regex!(".*(bot).*@.*");
 
     database.projects()
-        .map_into(
-            Select!(
-                project::URL, 
-                FromEachIf(
-                    project::Users, 
-                    //Or(
-                    Matches(user::Email, email_regex.clone())
-                    //)
-                )
-            ))
-        .into_csv_in_dir(output, "query5.csv")
+        // .map_into(
+        //     Select!(
+        //         project::URL,
+        //         FromEachIf(
+        //             project::Users,
+        //             //Or(
+        //             Matches(user::Email, email_regex.clone())
+        //             //)
+        //         )
+        //     ))
+        .into_csv_in_dir(output, "query_5.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -114,8 +114,8 @@ pub fn query6(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
         .filter_by(AtLeast(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java ))), 500))
         .sample(Random(9, Seed(1))) 
         .sort_by(Count(FromEachIf(project::Paths, Equal(path::Language, Language::Java )))) 
-        .map_into(Select!(project::URL, project::Size))
-        .into_csv_in_dir(output, "query6.csv")
+        //.map_into(Select!(project::URL, project::Size)) // Just project selection
+        .into_csv_in_dir(output, "query_6.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -126,15 +126,15 @@ pub fn query7(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
         .filter_by(Not(project::IsFork))
         .filter_by(MoreThan(project::Size, 0)) // non-empty project
         .sample(Random(100000, Seed(1)))  
-        .map_into(Select!(project::URL, project::Size))
-        .into_csv_in_dir(output, "query7.csv")
+        //.map_into(Select!(project::URL, project::Size)) // Just project selection
+        .into_csv_in_dir(output, "query_7.csv")
 }
 
-#[djanco(April, 2021, subsets(Generic))]
+// #[djanco(April, 2021, subsets(Generic))] // not interesting
 // Forking Without Clicking: on How to Identify Software Repository Forks
 pub fn query8(database: &Database, _log: &Log, output: &std::path::Path) -> Result<(), std::io::Error> {
     database.projects()
-        .into_csv_in_dir(output, "query8.csv")
+        .into_csv_in_dir(output, "query_8.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -157,7 +157,7 @@ pub fn query9(database: &Database, _log: &Log, output: &std::path::Path) -> Resu
             )
         ) // at least 90% of code written in JAVA
         //.sample(Random(48, Seed(1)))
-        .into_csv_in_dir(output, "query9.csv")
+        .into_csv_in_dir(output, "query_9.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -188,7 +188,7 @@ pub fn query10(database: &Database, _log: &Log, output: &std::path::Path) -> Res
         )// activity
         .sample(Random(10000, Seed(1)))
         .sort_by(project::Stars)
-        .into_csv_in_dir(output, "query10.csv")
+        .into_csv_in_dir(output, "query_10.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -198,7 +198,7 @@ pub fn query11(database: &Database, _log: &Log, output: &std::path::Path) -> Res
         //.filter_by(Equal(project::Language, Language::Kotlin))
         .filter_by(Not(project::IsFork))
         .filter_by(AtMost(project::Created,timestamp!(March 2018)))
-        .into_csv_in_dir(output, "query11.csv")
+        .into_csv_in_dir(output, "query_11.csv")
 }
 
 // END MSR20
@@ -215,7 +215,7 @@ pub fn query12(database: &Database, _log: &Log, output: &std::path::Path) -> Res
         .filter_by(Member(project::Language, target_files))
         .filter_by(AtLeast(project::Stars, 2))
         .filter_by(Not(project::IsFork))
-        .into_csv_in_dir(output, "query12.csv")
+        .into_csv_in_dir(output, "query_12.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -231,7 +231,7 @@ pub fn query13(database: &Database, _log: &Log, output: &std::path::Path) -> Res
         .filter_by(Not(project::IsFork))
         .filter_by(AtLeast(project::Stars, 100))
         .sort_by(project::Stars)
-        .into_csv_in_dir(output, "query13.csv")
+        .into_csv_in_dir(output, "query_13.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -258,15 +258,15 @@ pub fn query14(database: &Database, _log: &Log, output: &std::path::Path) -> Res
             )
         ) // has readme
         .sample(Random(5000, Seed(1))) 
-        .map_into(
-            Select!(
-                project::URL, 
-                FromEachIf(
-                    project::Paths, 
-                    Matches(path::Location, readme_regex.clone())
-                )
-            ))  
-        .into_csv_in_dir(output, "query14.csv")
+        // .map_into(           // Just project selection
+        //     Select!(
+        //         project::URL,
+        //         FromEachIf(
+        //             project::Paths,
+        //             Matches(path::Location, readme_regex.clone())
+        //         )
+        //     ))
+        .into_csv_in_dir(output, "query_14.csv")
 }
 
 #[djanco(April, 2021, subsets(Generic))]
@@ -291,10 +291,7 @@ pub fn query15(database: &Database, _log: &Log, output: &std::path::Path) -> Res
         .filter_by(
             AtMost(project::Created, timestamp!(August 2018))
         )
-        .into_csv_in_dir(output, "query15.csv")
+        .into_csv_in_dir(output, "query_15.csv")
 }
-
-
-
 
 // END MSR19
